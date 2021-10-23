@@ -3,13 +3,23 @@ package com.example.ipldashboard.repository;
 import com.example.ipldashboard.model.Match;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface MatchRepository extends CrudRepository<Match, Long> {
 
     List<Match> getByTeam1OrTeam2OrderByDateDesc(String team1, String team2, Pageable pageable);
+
+    @Query("SELECT m FROM Match m WHERE (m.team1 = :teamName or m.team2 = :teamName) " +
+            "AND m.date BETWEEN :dateStart AND :dateEnd ORDER BY m.date DESC")
+    List<Match> getMatchesByTeamBetweenDates(
+            @Param("teamName") String teamName,
+            @Param("dateStart") LocalDate dateStart,
+            @Param("dateEnd") LocalDate dateEnd);
 
     default List<Match> findLatestMatchesByTeam(String teamName, int count) {
         Pageable pageable = PageRequest.of(0, 4);
